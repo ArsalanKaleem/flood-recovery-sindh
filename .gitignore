@@ -116,3 +116,5 @@ results/models/*.pkl
 results/models/*.joblib
 results/models/*.h5
 *.log
+
+cache/
