@@ -43,9 +43,33 @@ def main() -> None:
     aoi = load_aoi()
     region = aoi.geometry().bounds()
 
+    # Ask GEE which assets already exist in the collection, so we skip them.
+    import ee
+
+    existing = ee.data.listAssets({"parent": ASSET_COLLECTION})
+    existing_names = {a["name"].split("/")[-1] for a in existing.get("assets", [])}
+    print(
+        f"Found {len(existing_names)} existing assets in collection, will skip those."
+    )
+
+    # Also skip anything currently PENDING/RUNNING in the task queue.
+    tasks = ee.data.listOperations()
+    active_descriptions = {
+        t["metadata"].get("description")
+        for t in tasks
+        if t.get("metadata", {}).get("state") in ("PENDING", "RUNNING")
+    }
+    print(
+        f"Found {len(active_descriptions)} tasks still PENDING/RUNNING, will skip those."
+    )
+
     submitted = 0
+    skipped = 0
     for y, m in month_iter(START_YEAR, START_MONTH, END):
         desc = f"s2_composite_{y}-{m:02d}"
+        if desc in existing_names or desc in active_descriptions:
+            skipped += 1
+            continue
         asset_id = f"{ASSET_COLLECTION}/{desc}"
         composite = build_month_composite(aoi, y, m)
         task = export_image_to_asset(
@@ -60,7 +84,9 @@ def main() -> None:
         print(f"  [{submitted:3d}] submitted {desc}  task={task.id}")
         time.sleep(0.5)
 
-    print(f"\nDone. Submitted {submitted} export tasks to {ASSET_COLLECTION}")
+    print(
+        f"\nDone. Submitted {submitted} new tasks, skipped {skipped} already handled."
+    )
     print(
         "Monitor at https://code.earthengine.google.com/tasks?project=flood-recovery-sindh"
     )
