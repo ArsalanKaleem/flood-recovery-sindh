@@ -78,6 +78,33 @@ def export_image_to_drive(
     )
 
 
+def export_image_to_asset(
+    image: ee.Image,
+    description: str,
+    asset_id: str,
+    region: ee.Geometry,
+    scale: int = 30,
+    crs: str = "EPSG:32642",
+) -> ee.batch.Task:
+    """
+    Export an image to a GEE asset (server-side storage inside your project).
+
+    asset_id is the full path where this image will live, e.g.
+    'projects/flood-recovery-sindh/assets/s2_monthly_composites/s2_2022-06'.
+    Parent collection or folder must already exist.
+    """
+    return ee.batch.Export.image.toAsset(
+        image=image,
+        description=description,
+        assetId=asset_id,
+        region=region,
+        scale=scale,
+        crs=crs,
+        maxPixels=1e13,
+        pyramidingPolicy={".default": "mean"},
+    )
+
+
 def export_table_to_drive(
     features: ee.FeatureCollection,
     description: str,
