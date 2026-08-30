@@ -1,0 +1,118 @@
+# ============================================================
+# Python
+# ============================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ============================================================
+# Virtual environments
+# ============================================================
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ============================================================
+# Jupyter
+# ============================================================
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+profile_default/
+ipython_config.py
+
+# ============================================================
+# VS Code / IDE
+# ============================================================
+.vscode/
+!.vscode/settings.json.example
+.idea/
+*.swp
+*.swo
+*~
+
+# ============================================================
+# OS
+# ============================================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================================================
+# Geospatial / large data
+# Keep the folder structure (via .gitkeep) but ignore contents.
+# ============================================================
+data/raw/**
+!data/raw/**/.gitkeep
+
+data/interim/**
+!data/interim/**/.gitkeep
+
+# Keep processed CSVs (analysis-ready tables) but ignore huge ones.
+data/processed/*.tif
+data/processed/*.nc
+data/processed/*.zarr
+data/processed/*.parquet
+
+# Common geospatial binary formats
+*.tif
+*.tiff
+*.nc
+*.nc4
+*.hdf
+*.hdf5
+*.h5
+*.zarr
+*.grd
+*.grib
+*.grib2
+
+# Shapefile companions (keep the config AOI though)
+*.shp
+*.shx
+*.dbf
+*.prj
+*.cpg
+!config/*.shp
+!config/*.shx
+!config/*.dbf
+!config/*.prj
+
+# ============================================================
+# GEE / auth / secrets
+# ============================================================
+.env
+.env.local
+*.pem
+*.key
+credentials.json
+service-account*.json
+
+# ============================================================
+# Model / results caches
+# ============================================================
+results/models/*.pkl
+results/models/*.joblib
+results/models/*.h5
+*.log

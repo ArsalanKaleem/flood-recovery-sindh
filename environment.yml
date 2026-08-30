@@ -1,0 +1,66 @@
+name: flood-recovery
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+
+  # --- Core scientific stack ---
+  - numpy
+  - pandas
+  - scipy
+  - jupyterlab
+  - ipykernel
+
+  # --- Geospatial: vector + raster ---
+  - geopandas
+  - shapely
+  - fiona
+  - pyproj
+  - rasterio
+  - rioxarray
+  - xarray
+  - netcdf4
+  - h5py
+  - dask
+
+  # --- Earth Engine ---
+  - earthengine-api
+  - geemap
+
+  # --- Statistics / econometrics ---
+  - statsmodels
+  - linearmodels
+
+  # --- Spatial statistics ---
+  - pysal
+  - esda
+  - libpysal
+  - spreg
+  - splot
+
+  # --- ML cross-check ---
+  - scikit-learn
+
+  # --- Visualization ---
+  - matplotlib
+  - seaborn
+  - folium
+  - plotly
+
+  # --- OSM ---
+  - osmnx
+
+  # --- Misc utilities ---
+  - tqdm
+  - python-dotenv
+  - pyyaml
+
+  # --- Dev tooling ---
+  - black
+  - ruff
+  - pytest
+
+  # --- Anything only on PyPI ---
+  - pip
+  - pip:
+      - s2cloudless
