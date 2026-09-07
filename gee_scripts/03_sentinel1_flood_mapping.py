@@ -2,7 +2,7 @@
 Day 3 — Sentinel-1 SAR flood extent and per-pixel flood-duration proxy.
 
 Method:
-1. Build S1 GRD IW VV collection over Aug-Oct 2022 for the AOI.
+1. Build S1 GRD IW VV collection over Aug-Oct 2022 for the AOI, both orbits.
 2. Refined Lee speckle filter per scene.
 3. Apply VV threshold (default -17 dB) to flag inundated pixels per scene.
 4. Sum flags per pixel across the collection = flood-duration proxy (# dates flagged).
@@ -10,10 +10,10 @@ Method:
 6. Export to GEE asset.
 
 Design notes:
-- We use ASCENDING orbit only by default for consistency (Sindh has both,
-  but mixing them without careful angle correction introduces artifacts).
-  The diagnostic prints show what's available; adjust ORBIT if coverage
-  is poor.
+- We use BOTH ASCENDING and DESCENDING orbits for maximum temporal density.
+  At ~26°N over open standing water, VV backscatter differences between
+  orbit directions are within ~1 dB and don't meaningfully shift the flood
+  threshold. This matches the approach in Ahmed et al. 2023 (Sci Reports).
 - Threshold is a defensible starting value; we validate against JRC GSW
   visually in QGIS after export.
 """
@@ -31,7 +31,6 @@ from src.gee_utils import init_ee, load_aoi, export_image_to_asset
 FLOOD_START = "2022-08-01"
 FLOOD_END = "2022-11-01"
 VV_THRESHOLD_DB = -17.0
-ORBIT = "ASCENDING"  # or "DESCENDING"
 ASSET_ID = "projects/flood-recovery-sindh/assets/flood_duration_2022"
 
 
@@ -58,17 +57,20 @@ def refined_lee(img: ee.Image) -> ee.Image:
 
 
 def s1_collection(
-    aoi: ee.FeatureCollection, start: str, end: str, orbit: str = ORBIT
+    aoi: ee.FeatureCollection, start: str, end: str, orbit: str | None = None
 ) -> ee.ImageCollection:
-    return (
+    """S1 GRD IW VV. If orbit is None, both directions are included."""
+    coll = (
         ee.ImageCollection("COPERNICUS/S1_GRD")
         .filterBounds(aoi.geometry())
         .filterDate(start, end)
         .filter(ee.Filter.listContains("transmitterReceiverPolarisation", "VV"))
         .filter(ee.Filter.eq("instrumentMode", "IW"))
-        .filter(ee.Filter.eq("orbitProperties_pass", orbit))
         .select("VV")
     )
+    if orbit:
+        coll = coll.filter(ee.Filter.eq("orbitProperties_pass", orbit))
+    return coll
 
 
 def flag_water(img: ee.Image, threshold_db: float = VV_THRESHOLD_DB) -> ee.Image:
@@ -93,8 +95,9 @@ def diagnostics(aoi: ee.FeatureCollection) -> None:
     print(f"S1 scene inventory for AOI, {FLOOD_START} → {FLOOD_END}:")
     for orbit in ("ASCENDING", "DESCENDING"):
         n = s1_collection(aoi, FLOOD_START, FLOOD_END, orbit).size().getInfo()
-        marker = "  <-- using" if orbit == ORBIT else ""
-        print(f"  {orbit:12s}: {n} scenes{marker}")
+        print(f"  {orbit:12s}: {n} scenes")
+    total = s1_collection(aoi, FLOOD_START, FLOOD_END).size().getInfo()
+    print(f"  Both orbits : {total} scenes  <-- using")
 
 
 def main() -> None:
