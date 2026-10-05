@@ -14,6 +14,20 @@ dataset. Fill in as each layer is exported (Days 1-5) and revised during Phase 2
 ## Vegetation indices
 
 
+### Phase 1 asset inventory (complete)
+
+All raw/derived layers now live as GEE assets under
+`projects/flood-recovery-sindh/assets/`:
+
+- `s2_monthly_composites/` — 69 months (2021-01 → 2026-09), NDVI + EVI, 30 m
+- `flood_duration_2022` — single image, S1 both orbits, 30 m
+- `chirps_rainfall_anomaly_2022` — single image, mm vs 2015-2021 baseline, 5 km
+- `srtm_terrain` — elevation, slope, TWI approx, 30 m
+- `esa_cropland_mask` — binary, class 40 cropland, 10 m
+- `era5_soil_moisture/` — 68 months, volumetric_soil_water_layer_1, 1 km
+- `era5_lst/` — 68 months, skin_temperature, 1 km
+
+
 | Variable              | Source                   | Native res | Date range         | Notes                               |
 | --------------------- | ------------------------ | ---------- | ------------------ | ----------------------------------- |
 | NDVI (monthly median) | Sentinel-2 SR HARMONIZED | 10 m       | 2021-01 → present | s2cloudless cloud/shadow mask       |
@@ -86,7 +100,6 @@ dataset. Fill in as each layer is exported (Days 1-5) and revised during Phase 2
 | rainfall_anomaly_2022  | CHIRPS anomaly, Day 4                         | mm vs. baseline                     |
 | elevation_m, slope_deg | SRTM derivatives, Day 4                       |                                     |
 | dist_to_drainage_m     | OSM waterways + rivers                        | Day 5                               |
-
 
 ### Coverage QA (Day 2)
 
