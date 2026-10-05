@@ -27,6 +27,18 @@ All raw/derived layers now live as GEE assets under
 - `era5_soil_moisture/` — 68 months, volumetric_soil_water_layer_1, 1 km
 - `era5_lst/` — 68 months, skin_temperature, 1 km
 
+### Day 5 additions
+
+- `ndwi_persistence_months` — single image, # months Nov22-Oct23 where NDWI anomaly > 0.1 vs. baseline; waterlogging proxy, 30 m
+- `sbi_persistence_months` — single image, # months Nov22-Oct23 where SBI anomaly > 0.05 vs. baseline; salinity proxy, 30 m
+- `worldpop_density` — single image, 2020 population per 100 m cell
+
+Local vector:
+
+- `data/raw/osm/osm_roads.gpkg` — 12,531 major roads inside AOI (Geofabrik PK extract)
+- `data/raw/osm/osm_waterways.gpkg` — 3,775 OSM waterways incl. canals (Geofabrik)
+- `data/raw/osm/hydrorivers.gpkg` — 6,261 HydroRIVERS v1.0 reaches (natural drainage)
+
 
 | Variable              | Source                   | Native res | Date range         | Notes                               |
 | --------------------- | ------------------------ | ---------- | ------------------ | ----------------------------------- |
