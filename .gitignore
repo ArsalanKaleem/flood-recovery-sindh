@@ -118,3 +118,8 @@ results/models/*.h5
 *.log
 
 cache/
+
+# Analysis grid is large derived data, regenerable
+data/processed/*.gpkg
+
+data/processed/*.zip
