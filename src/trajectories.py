@@ -33,9 +33,12 @@ REF_PERIOD = pd.Period("2021-01", freq="M")
 
 def _month_to_t(month_period) -> np.ndarray:
     """Convert month periods to integer t (months since Jan 2021)."""
-    # Normalize to PeriodIndex regardless of whether a Series or Index was passed.
     pi = pd.PeriodIndex(month_period)
-    return (pi - REF_PERIOD).n.astype(np.float64)
+    years = pi.year.to_numpy()
+    months = pi.month.to_numpy()
+    ref_total = REF_PERIOD.year * 12 + (REF_PERIOD.month - 1)
+    row_total = years * 12 + (months - 1)
+    return (row_total - ref_total).astype(np.float64)
 
 
 def _design_matrix(t: np.ndarray) -> np.ndarray:
