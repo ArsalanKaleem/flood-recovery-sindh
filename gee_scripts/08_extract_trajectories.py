@@ -24,6 +24,7 @@ GRID = f"{BASE}/analysis_grid"
 EXPORT_FOLDER = "flood-recovery-exports/trajectories"
 
 
+
 def extract_district(
     district_name: str, grid: ee.FeatureCollection, composites: ee.ImageCollection
 ) -> ee.batch.Task:
