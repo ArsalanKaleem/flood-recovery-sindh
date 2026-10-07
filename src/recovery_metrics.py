@@ -5,7 +5,7 @@ Reads processed per-cell-per-month trajectories (Day 7), computes three
 per-cell outcomes, saves one row per cell for Phase 3+ analysis.
 
 Metrics:
-  ttr_months     — months until NDVI anomaly returns within 0.05 of baseline
+  ttr_months    — months until NDVI anomaly returns within 0.05 of baseline
                    and stays there ≥3 consecutive months (right-censored at 50)
   ttr_censored   — 1 if the cell never recovered in the observation window
   cvd            — cumulative vegetation deficit: sum of negative NDVI
