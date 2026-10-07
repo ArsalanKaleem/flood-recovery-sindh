@@ -37,11 +37,14 @@ REPO = Path(__file__).resolve().parents[1]
 OUT_PATH = REPO / "data" / "processed" / "recovery_metrics.parquet"
 
 # Analysis windows.
+# Analysis windows.
 FLOOD_PERIOD = pd.Period("2022-08", freq="M")
-PRE_START = pd.Period("2021-01", freq="M")
+PRE_START = pd.Period("2021-10", freq="M")  # 10 months before flood
 PRE_END = pd.Period("2022-07", freq="M")
-POST_CCR_START = pd.Period("2022-11", freq="M")
-POST_CCR_END = pd.Period("2024-10", freq="M")  # inclusive
+POST_CCR_START = pd.Period("2023-08", freq="M")  # 12 months after flood (post-recovery)
+POST_CCR_END = pd.Period(
+    "2024-05", freq="M"
+)  # 10 months, matches pre window# 19 months, matches pre window# inclusive
 
 # Metric parameters.
 THRESHOLD = 0.05  # NDVI anomaly recovery band
