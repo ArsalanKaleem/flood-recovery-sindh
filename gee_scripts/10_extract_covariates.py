@@ -1,9 +1,5 @@
 """
-Day 10 — Per-cell extraction of remaining covariates from GEE assets.
-
-Six single-image assets × 22 districts = 132 small CSV exports.
-Each lands in Google Drive → flood-recovery-exports/ with a prefix identifying
-the covariate.
+Day 10 — Per-cell covariate extraction. Resume-safe.
 """
 
 from __future__ import annotations
@@ -18,38 +14,30 @@ from src.gee_utils import init_ee, load_aoi
 BASE = "projects/flood-recovery-sindh/assets"
 GRID = f"{BASE}/analysis_grid"
 
-# One row per layer: (prefix, asset_id, bands_to_keep, output_scale, selectors)
 LAYERS = [
-    (
-        "terrain",
-        f"{BASE}/srtm_terrain",
-        ["elevation_m", "slope_deg", "twi_approx"],
-        30,
-        ["elevation_m", "slope_deg", "twi_approx"],
-    ),
-    (
-        "rainfall",
-        f"{BASE}/chirps_rainfall_anomaly_2022",
-        ["rainfall_anomaly_mm"],
-        5000,
-        ["rainfall_anomaly_mm"],
-    ),
-    (
-        "ndwi_persist",
-        f"{BASE}/ndwi_persistence_months",
-        ["ndwi_persist_months"],
-        30,
-        ["ndwi_persist_months"],
-    ),
-    (
-        "sbi_persist",
-        f"{BASE}/sbi_persistence_months",
-        ["sbi_persist_months"],
-        30,
-        ["sbi_persist_months"],
-    ),
-    ("worldpop", f"{BASE}/worldpop_density", ["population"], 100, ["population"]),
+    ("terrain", f"{BASE}/srtm_terrain", ["elevation_m", "slope_deg", "twi_approx"], 30),
+    ("rainfall", f"{BASE}/chirps_rainfall_anomaly_2022", ["rainfall_anomaly_mm"], 5000),
+    ("ndwi_persist", f"{BASE}/ndwi_persistence_months", ["ndwi_persist_months"], 30),
+    ("sbi_persist", f"{BASE}/sbi_persistence_months", ["sbi_persist_months"], 30),
+    ("worldpop", f"{BASE}/worldpop_density", ["population"], 100),
 ]
+
+
+def active_task_descriptions() -> set[str]:
+    """Descriptions of tasks currently PENDING, RUNNING, or COMPLETED (last 10d)."""
+    try:
+        ops = ee.data.listOperations()
+    except Exception:
+        return set()
+    active = set()
+    for t in ops:
+        md = t.get("metadata", {})
+        state = md.get("state", "")
+        if state in ("PENDING", "RUNNING", "SUCCEEDED", "COMPLETED"):
+            desc = md.get("description")
+            if desc:
+                active.add(desc)
+    return active
 
 
 def extract_layer(
@@ -57,11 +45,10 @@ def extract_layer(
     cells: ee.FeatureCollection,
     prefix: str,
     asset_id: str,
-    band_names: list[str],
+    bands: list[str],
     scale: int,
-    selectors: list[str],
 ) -> tuple[ee.batch.Task, str]:
-    img = ee.Image(asset_id).select(band_names)
+    img = ee.Image(asset_id).select(bands)
     reduced = img.reduceRegions(
         collection=cells,
         reducer=ee.Reducer.mean(),
@@ -69,17 +56,15 @@ def extract_layer(
         tileScale=4,
     )
 
-    # The default reducer returns `mean` for a single band or `band_mean` for
-    # multi-band; rename for consistency.
-    if len(band_names) == 1:
-        rename_map = {"mean": band_names[0]}
-    else:
-        rename_map = {f"{b}": b for b in band_names}
-
+    # For multi-band images, reduceRegions puts each band's mean in a column
+    # named after the band itself. For single-band it uses 'mean'.
     def trim(f):
         props = {"cell_id": f.get("cell_id")}
-        for src_key, dst_key in rename_map.items():
-            props[dst_key] = f.get(src_key)
+        if len(bands) == 1:
+            props[bands[0]] = f.get("mean")
+        else:
+            for b in bands:
+                props[b] = f.get(b)
         return ee.Feature(None, props)
 
     reduced = reduced.map(trim)
@@ -90,7 +75,7 @@ def extract_layer(
         folder="flood-recovery-exports",
         fileNamePrefix=desc,
         fileFormat="CSV",
-        selectors=["cell_id"] + selectors,
+        selectors=["cell_id"] + bands,
     )
     return task, desc
 
@@ -101,22 +86,29 @@ def main() -> None:
     grid = ee.FeatureCollection(GRID)
     districts = sorted(aoi.aggregate_array("district").getInfo())
 
-    print(
-        f"Submitting {len(LAYERS)} × {len(districts)} = "
-        f"{len(LAYERS)*len(districts)} covariate tasks...\n"
-    )
+    print("Fetching current task list to skip in-flight / completed...")
+    skip = active_task_descriptions()
+    print(f"  {len(skip)} tasks already known.")
 
-    submitted = 0
+    submitted, skipped = 0, 0
+    print(f"\nSubmitting any missing tasks...\n")
     for d in districts:
         cells = grid.filter(ee.Filter.eq("district", d))
-        for prefix, asset_id, bands, scale, sels in LAYERS:
-            task, desc = extract_layer(d, cells, prefix, asset_id, bands, scale, sels)
-            task.start()
-            submitted += 1
-            print(f"  [{submitted:3d}] {desc}")
-            time.sleep(0.4)
+        for prefix, asset_id, bands, scale in LAYERS:
+            desc = f"{prefix}_{d.replace(' ', '_')}"
+            if desc in skip:
+                skipped += 1
+                continue
+            try:
+                task, _ = extract_layer(d, cells, prefix, asset_id, bands, scale)
+                task.start()
+                submitted += 1
+                print(f"  [{submitted:3d}] {desc}")
+                time.sleep(0.4)
+            except Exception as e:
+                print(f"  ERROR submitting {desc}: {e}")
 
-    print(f"\nSubmitted {submitted} tasks.")
+    print(f"\nSubmitted {submitted}, skipped {skipped} already in flight.")
     print(
         "Monitor at https://code.earthengine.google.com/tasks?project=flood-recovery-sindh"
     )
