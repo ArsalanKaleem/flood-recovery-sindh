@@ -103,6 +103,33 @@ def load_matched_trajectories() -> pd.DataFrame:
         ndvi_anom=("ndvi_anom", "mean"), evi_anom=("evi_anom", "mean")
     )
 
+    # Winsorize EVI anomaly: a tiny number of cells have EVI blown up by
+    # near-zero denominators in cloud-affected pixels. Clip at the 0.1/99.9
+    # percentiles (symmetric, ~0.6 either side) so one bad cell doesn't drive
+    # the regression. We checked: 99.9% of values fall between -0.58 and +0.66.
+    evi_lo, evi_hi = season_df["evi_anom"].quantile([0.001, 0.999])
+    n_clipped_evi = (
+        (season_df["evi_anom"] < evi_lo) | (season_df["evi_anom"] > evi_hi)
+    ).sum()
+    season_df["evi_anom"] = season_df["evi_anom"].clip(evi_lo, evi_hi)
+    print(
+        f"  Winsorized EVI at [{evi_lo:.3f}, {evi_hi:.3f}]: "
+        f"{n_clipped_evi:,} rows clipped "
+        f"({n_clipped_evi / len(season_df) * 100:.3f}%)"
+    )
+
+    # Same for NDVI, out of caution — though diagnostics showed no issues there.
+    ndvi_lo, ndvi_hi = season_df["ndvi_anom"].quantile([0.001, 0.999])
+    n_clipped_ndvi = (
+        (season_df["ndvi_anom"] < ndvi_lo) | (season_df["ndvi_anom"] > ndvi_hi)
+    ).sum()
+    season_df["ndvi_anom"] = season_df["ndvi_anom"].clip(ndvi_lo, ndvi_hi)
+    print(
+        f"  Winsorized NDVI at [{ndvi_lo:.3f}, {ndvi_hi:.3f}]: "
+        f"{n_clipped_ndvi:,} rows clipped "
+        f"({n_clipped_ndvi / len(season_df) * 100:.3f}%)"
+    )
+
     # Merge treatment, matched_pair_id, district.
     season_df = season_df.merge(
         matched[["cell_id", PRIMARY_TREAT, "matched_pair_id", "district"]],
