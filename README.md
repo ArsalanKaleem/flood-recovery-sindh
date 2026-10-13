@@ -1,141 +1,168 @@
-# Flood Recovery in Sindh
+# From Flood Damage to Recovery
 
-Multi-year satellite assessment of agricultural recovery after the 2022 floods in Sindh, Pakistan.
+**Multi-year satellite assessment of cropland recovery after the 2022 Sindh floods.**
 
-## Project overview
+> This repository contains the data pipeline, analysis code, and results for a
+> peer-reviewed study of how fast flooded cropland in Sindh, Pakistan recovered
+> from the 2022 monsoon floods — and what environmental factors explain the
+> differences in recovery speed across space.
 
-This project examines how cropland in Sindh recovered after the catastrophic 2022 flooding and which environmental conditions shaped the speed and completeness of that recovery. The study focuses on seven districts in the flood-affected region: Dadu, Jamshoro, Larkana, Qambar-Shahdadkot, Jacobabad, Shikarpur, and Sanghar.
+## What this study does
 
-The core question is not simply whether vegetation declined after the flood. Instead, the project asks:
+Most published remote-sensing papers on the 2022 Sindh floods map flood extent
+or estimate crop losses in the shock season. This study asks a different
+question: **how quickly did affected cropland bounce back, and did it bounce
+back fully?**
 
-- How quickly did flooded cropland return to a near-pre-flood vegetation state?
-- How much cumulative productivity was lost relative to a non-flooded counterfactual?
-- Which areas recovered fully, and which remained impaired by prolonged waterlogging or salinity?
-- Which physical and climatic conditions most strongly explain differences in recovery across space?
+The central methodological choice is a **matched counterfactual design** rather
+than a before/after NDVI comparison. For each flooded cropland cell, we identify
+a non-flooded cropland cell with statistically identical pre-flood
+characteristics (elevation, slope, drainage proximity, soil wetness, pre-flood
+vegetation level and trend). An event-study difference-in-differences model
+then estimates the recovery trajectory of flooded cells relative to their
+matched controls, season by season, from one year before the flood through
+four years after.
 
-## Why this is a recovery study, not a damage map
+## Headline findings
 
-A simple before/after NDVI comparison would capture shock but would not isolate recovery. This repository is designed around a counterfactual framework:
+- Flooded cropland showed a **−0.20 NDVI anomaly** in the shock season (Kharif
+  2022) relative to matched controls.
+- Partial recovery was observable within one year, bottoming out at **−0.06**
+  by Rabi 2023-24.
+- Recovery did not continue monotonically. Cropland productivity **re-dampened**
+  from Kharif 2024 onwards and has **not returned to pre-flood levels** through
+  Kharif 2026 (persistent gap of −0.11 NDVI).
+- Dose-response confirms the pattern: cells with longer flood exposure show
+  deeper initial shock (−0.13 / −0.19 / −0.28 by flood-duration tercile) and
+  slower recovery.
+- Results are robust to placebo tests, caliper sensitivity, leave-one-district
+  cross-validation, and alternative treatment thresholds.
 
-- Flooded cropland is compared against matched non-flooded cropland with similar pre-flood conditions.
-- Recovery is tracked over the period 2021 → 2022 → 2023 → 2024 → 2025/26.
-- The outcomes of interest are recovery metrics, not just flood extent or initial damage.
+## Study area
 
-Primary outcomes include:
+Agricultural Sindh — 22 districts covering the full Indus-fed cropland belt,
+excluding Karachi metropolitan sub-districts and the Rann of Kutch salt flats.
+~555,000 cropland cells at 300 m resolution.
 
-- Time-to-recovery: number of growing seasons required for NDVI/EVI to return within a threshold of the pre-flood baseline
-- Cumulative vegetation deficit: area under the anomaly curve from the flood shock until recovery
-- Crop-cycle restoration: whether distinct seasonal growth peaks return to pre-flood patterns
-
-These outcomes are then related to flood duration, waterlogging persistence, salinity proxies, rainfall anomalies, elevation, soil texture proxies, and distance to drainage.
-
-## Scientific design
-
-The project combines remote sensing, geospatial analytics, and statistical modeling:
-
-- Sentinel-2 and Landsat time series for vegetation and water signals
-- Sentinel-1 SAR for flood and water extent signals
-- CHIRPS and ERA5-Land for rainfall and climate context
-- SRTM and terrain derivatives for elevation and slope
-- Soil and drainage proxies for local geomorphic controls
-- Matching methods and difference-in-differences frameworks to estimate causal recovery contrasts
-
-A key methodological step is to create a matched control group so that observed post-flood differences are not simply due to baseline differences in land productivity or geography.
-
-## Repository structure
-
-```text
-flood-recovery-sindh/
-├── config/                 # AOI files and district boundaries
-├── data/
-│   ├── raw/                # Unmodified source data and exports
-│   ├── interim/            # Derived rasters, composites, and masks
-│   └── processed/          # Analysis-ready tables and feature matrices
-├── gee_scripts/            # Google Earth Engine Python pipelines
-│   ├── 06_salinity_waterlog_proxy.py
-│   └── ...
-├── notebooks/              # Analysis notebooks by phase
-├── src/                    # Reusable Python utilities and model code
-│   ├── gee_utils.py
-│   ├── indices.py
-│   ├── matching.py
-│   ├── models.py
-│   └── viz.py
-├── results/                # Figures, tables, and saved outputs
-├── manuscript/             # Drafts, references, and paper materials
-├── docs/                   # Internal documentation and data dictionaries
-├── environment.yml         # Conda environment specification
-├── .env.example            # Example environment file
-├── README.md               # Project overview and setup guide
-├── .gitignore
-└── .env                    # Local environment settings (not committed)
-```
+Districts: Dadu, Jamshoro, Larkana, Jacobabad, Shikarpur, Sanghar, Badin,
+Ghotki, Hyderabad, Kashmore, Khairpur, Malir, Matiari, Mirpurkhas, Mithi,
+Naushahro Firoz, Nawabshah, Sukkur, Tando Allahyar, Tando M. Khan, Thatta,
+Umerkot.
 
 ## Data sources
 
-The project uses public, open-access data sources, including:
+All inputs are free, public:
 
-- Sentinel-1/2 and Landsat 8/9 surface reflectance products
-- CHIRPS rainfall data
-- ERA5-Land climate variables
-- SRTM elevation and derived terrain metrics
-- ESA WorldCover and related land-cover products
-- WorldPop and ancillary population or settlement context
-- JRC Global Surface Water and drainage-linked reference layers
-- OpenStreetMap and PBS district statistics where relevant
+- **Sentinel-2 SR Harmonized** — monthly NDVI/EVI composites, 2021-01 to
+  2026-09 (69 months). Cloud/shadow masking via s2cloudless probability.
+- **Sentinel-1 GRD IW** — flood extent and duration, both orbits, Aug-Oct 2022.
+  Refined Lee speckle filter + VV threshold.
+- **CHIRPS** — rainfall anomaly for the 2022 monsoon vs 2015–2021 baseline.
+- **ERA5-Land** — monthly soil moisture (layer 1) and skin temperature.
+- **SRTM** — elevation, slope, and TWI approximation.
+- **ESA WorldCover v200** — cropland mask (class 40).
+- **WorldPop 2020** — population density.
+- **JRC Global Surface Water** — permanent water masking.
+- **Geofabrik Pakistan OSM extract + HydroRIVERS v1.0** — roads and drainage.
+- **GADM 4.1** — administrative boundaries (level 3).
 
-No raw satellite archives are committed to this repository; derived products and analysis-ready tables are stored under `data/` where appropriate.
+## Methodology
 
-## Environment setup
+1. **Analysis grid** — 300 m stratified grid over cropland pixels across the 22
+   districts; cells with ≥50% cropland fraction kept; 555,309 cells total.
+2. **Vegetation trajectories** — per-cell monthly NDVI/EVI anomalies, computed
+   relative to a per-cell harmonic baseline (annual sine + linear trend) fit
+   on 19 months of pre-flood observations.
+3. **Treatment classification** — cells with ≥3 Sentinel-1 water detections
+   during Aug-Oct 2022 are "treated" (15.8% of grid); ≥1 and ≥5 used for
+   sensitivity.
+4. **Propensity matching** — 1:1 nearest-neighbor matching on logit propensity
+   with caliper 0.2×SD. 87,447 of 87,948 treated cells matched (99.4%). All 7
+   covariates balanced to |SMD| < 0.03 post-matching.
+5. **Event-study DiD** — cell × season panel with cell + season-year fixed
+   effects, SEs clustered by district. 11 seasons (Kharif 2021 reference
+   through Kharif 2026).
+6. **Robustness** — placebo (p=0.56), caliper sensitivity (0.5×/baseline/2×
+   all coef ≈ −0.20), flood-duration dose-response (monotonic), leave-one-out
+   across 22 districts (range −0.19 to −0.20).
+
+## Repository layout
+
+flood-recovery-sindh/
+├── config/                  # 22-district AOI (GADM 4.1)
+├── data/
+│   ├── raw/                 # Downloaded CSVs (gitignored)
+│   └── processed/           # Analysis-ready parquet files (gitignored)
+├── gee\_scripts/             # Server-side GEE Python pipelines (Days 1-10)
+├── src/
+│   ├── gee\_utils.py         # GEE auth + export helpers
+│   ├── indices.py           # NDVI, EVI, NDWI, SBI, S1 water
+│   ├── trajectories.py      # Harmonic baselines + anomalies (Day 7)
+│   ├── soil\_moisture.py     # ERA5 SM persistence (Day 9b)
+│   ├── recovery\_metrics.py  # TTR, CVD, CCR per cell (Day 8)
+│   ├── master\_dataset.py    # Merge everything (Day 10)
+│   ├── treatment\_control.py # Treatment classification (Day 11)
+│   ├── matching\_day12.py    # Propensity matching (Day 12)
+│   ├── did\_day13.py         # Event-study DiD (Day 13)
+│   ├── robustness\_day14.py  # Placebo/caliper/dose/LOO (Day 14)
+│   └── viz.py               # Shared plotting style
+├── results/
+│   ├── figures/             # Plots for the manuscript
+│   └── tables/              # Coefficient CSVs
+├── manuscript/              # Draft, references, submission package
+└── docs/
+├── data\_dictionary.md
+├── resume\_notes.md
+└── day15\_gap\_review.md
+
+
+## Reproducing the pipeline
+
+Full environment and data acquisition takes ~40 compute hours on Google Earth
+Engine (noncommercial tier) and ~5 hours on a laptop.
 
 ```bash
-# 1. Create the conda environment
+# 1. Environment
 conda env create -f environment.yml
 conda activate flood-recovery
-
-# 2. Authenticate Google Earth Engine (one-time setup)
 earthengine authenticate
 
-# 3. Configure the GEE project ID
-# either via a .env file or by exporting it in the terminal
-export GEE_PROJECT_ID=your-project-id-here
+# 2. GEE pipelines (Days 1-10). Each submits async tasks; monitor at
+#    https://code.earthengine.google.com/tasks
+python gee_scripts/01_aoi_setup.py
+python gee_scripts/02_sentinel2_composites.py
+python gee_scripts/02b_sentinel2_full_batch.py
+python gee_scripts/03_sentinel1_flood_mapping.py
+python gee_scripts/04_ancillary_layers.py
+# ... through 10_extract_covariates.py
 
-# 4. Sanity check
-python -c "import ee; ee.Initialize(project='your-project-id'); print('GEE OK')"
+# 3. Local analysis (Days 7-14)
+python -m src.trajectories
+python -m src.recovery_metrics
+python -m src.soil_moisture
+python -m src.master_dataset
+python -m src.treatment_control
+python -m src.matching_day12
+python -m src.did_day13
+python -m src.robustness_day14
 ```
 
-## Typical workflow
+See `docs/data_dictionary.md` for every variable's source, resolution, and
+transformation.
 
-1. Build regional flood and vegetation masks in Google Earth Engine.
-2. Create monthly or seasonal vegetation composites and anomaly time series.
-3. Derive flood-duration, waterlogging, and salinity persistence proxies.
-4. Assemble a cell-level analysis dataset for cropland parcels.
-5. Match flooded cells with comparable non-flooded cells.
-6. Estimate recovery metrics and model drivers of recovery using DiD and mixed-effects approaches.
-7. Validate results through robustness checks and diagnostics.
+## Status
 
-## Key analysis concepts
-
-### Waterlogging persistence
-
-A proxy for how long anomalously wet or waterlogged conditions persisted after the flood. In the GEE pipeline, this is approximated by the number of post-flood months in which NDWI remained elevated above a baseline threshold.
-
-### Salinity persistence
-
-A proxy for lingering salt stress or bare-soil brightening after inundation. In the project workflow, this is approximated by counting the number of post-flood months in which SBI stayed elevated relative to the same pre-flood baseline window.
-
-### Recovery metrics
-
-The analysis emphasizes metrics that reflect functional agricultural recovery rather than simple vegetation loss, including recovery timing and cumulative deficit.
-
-## Current status
-
-This repository is organized as an active research workflow: geospatial processing scripts, analysis notebooks, and modeling utilities are being developed and refined around the counterfactual recovery study design.
+Phase 3 (counterfactual design) complete. Entering Phase 4 (statistical
+modeling of recovery drivers).
 
 ## License
 
-License information is still pending.
+TBD — will be set to CC-BY-4.0 at manuscript submission.
 
 ## Citation
 
-Citation details will be added once the manuscript is finalized.
+TBD — this entry will be updated with the DOI once the manuscript is accepted.
+
+## Contact
+
+Repository: https://github.com/ArsalanKaleem/flood-recovery-sindh
