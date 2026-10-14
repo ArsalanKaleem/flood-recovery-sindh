@@ -49,3 +49,24 @@ All in master_dataset.parquet. See docs/data_dictionary.md.
 - SM persistence may be redundant with flood_duration in regression;
   evaluate on Day 16c, consider ERA5 soil_moisture_layer_3 refetch
   if needed
+
+
+## Phase 4 enhancements — Day 16a UPDATE
+
+Phenological decomposition revealed a **Kharif-Rabi recovery asymmetry**
+not visible in the Day 13 event-study.
+
+Integrated NDVI across 4 post-flood years:
+
+- Kharif 2022-2026: persistent deficit of -0.30 to -0.60 units
+- Rabi 2022-23: still deficit (-0.43)
+- Rabi 2023-24 onwards: treated cells EXCEED matched controls
+
+This reframes the paper's finding from "incomplete recovery through k=8"
+to "seasonally decoupled recovery: Kharif suppression + Rabi
+intensification." Three candidate mechanisms (cropping shift, summer
+waterlogging recurrence, salinization timing) will be presented in
+Discussion.
+
+Day 16c mixed-effects regression will formalize the asymmetry by
+interacting flood_duration with season type.
