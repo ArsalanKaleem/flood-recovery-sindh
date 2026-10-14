@@ -97,11 +97,19 @@ def main() -> None:
     sarar_coefs = {}
     for i, name in enumerate(x_cols):
         sarar_coefs[name] = {
-            "sarar_coef": float(model.betas[i + 1]),  # +1 to skip intercept
+            "sarar_coef": float(model.betas[i + 1][0]),  # betas is 2D, pick [row][col]
             "sarar_se": float(np.sqrt(model.vm[i + 1, i + 1])),
         }
-    sarar_coefs["rho_lag"] = {"sarar_coef": float(model.betas[-2]), "sarar_se": None}
-    sarar_coefs["lambda_err"] = {"sarar_coef": float(model.betas[-1]), "sarar_se": None}
+    sarar_coefs["rho_lag"] = {"sarar_coef": float(model.betas[-2][0]), "sarar_se": None}
+    sarar_coefs["lambda_err"] = {
+        "sarar_coef": float(model.betas[-1][0]),
+        "sarar_se": None,
+    }
+    sarar_coefs["rho_lag"] = {"sarar_coef": float(model.betas[-2][0]), "sarar_se": None}
+    sarar_coefs["lambda_err"] = {
+        "sarar_coef": float(model.betas[-1][0]),
+        "sarar_se": None,
+    }
 
     comparison_rows = []
     model_a = pd.read_csv(TAB / "day16c_model_a_ttr.csv", index_col=0)
