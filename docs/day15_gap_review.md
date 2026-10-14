@@ -69,4 +69,4 @@ waterlogging recurrence, salinization timing) will be presented in
 Discussion.
 
 Day 16c mixed-effects regression will formalize the asymmetry by
-interacting flood_duration with season type.
+interacting flood_duration with season type
