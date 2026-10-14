@@ -115,7 +115,6 @@ flood-recovery-sindh/
 ├── resume\_notes.md
 └── day15\_gap\_review.md
 
-
 ## Reproducing the pipeline
 
 Full environment and data acquisition takes ~40 compute hours on Google Earth
@@ -150,10 +149,13 @@ python -m src.robustness_day14
 See `docs/data_dictionary.md` for every variable's source, resolution, and
 transformation.
 
+
 ## Status
 
-Phase 3 (counterfactual design) complete. Entering Phase 4 (statistical
-modeling of recovery drivers).
+**Phases 1–4 complete.** Phase 5 (manuscript writing) begins Day 21.
+
+Key findings summarized in `docs/results_summary.md`. Reproduction instructions
+in `docs/reproduction_manifest.md`.
 
 ## License
 
