@@ -1,0 +1,2 @@
+sample_size,k_neighbors,moran_I,expected_I,z_score,p_permutation,verdict
+25000,8,0.16649135542047802,-4.000160006400256e-05,55.404659015548134,0.01,MODERATE spatial autocorrelation (0.15 ≤ I < 0.3); consider SARAR
