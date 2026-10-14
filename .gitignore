@@ -127,3 +127,5 @@ data/processed/*.zip
 data/processed/trajectories/
 
 data/processed/*.gpkg
+
+dist/
