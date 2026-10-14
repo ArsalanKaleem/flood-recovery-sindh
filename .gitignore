@@ -123,3 +123,7 @@ cache/
 data/processed/*.gpkg
 
 data/processed/*.zip
+
+data/processed/trajectories/
+
+data/processed/*.gpkg
