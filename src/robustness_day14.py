@@ -294,7 +294,7 @@ def plot_all(
     loo_curves: dict,
 ) -> Path:
     set_paper_style()
-    fig, axes = plt.subplots(2, 2, figsize=(13, 9), sharex=True, sharey=True)
+    fig, axes = plt.subplots(2, 2, figsize=(13, 9), sharey=True)
 
     # Load Day 13 NDVI for the "primary" trace shown alongside each check.
     main = pd.read_csv(TABLE_DIR / "day13_eventstudy_ndvi.csv")
